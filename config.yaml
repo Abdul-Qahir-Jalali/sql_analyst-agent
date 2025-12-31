@@ -1,0 +1,41 @@
+# SQL Analyst Agent - Configuration
+
+# Groq API Settings
+groq:
+  api_key: "${GROQ_API_KEY}" # Will be loaded from .env file
+  model: "llama-3.3-70b-versatile"
+  max_tokens: 500
+  temperature: 0.1
+
+# Database Settings - Using SQLite for easy deployment
+database:
+  type: "sqlite"
+  database: "retail_analytics.db"
+
+# For local MySQL development, uncomment below:
+# database:
+#   type: "mysql"
+#   host: "localhost"
+#   user: "root"
+#   password: "Qahir125#"
+#   database: "retail_analytics"
+#   port: 3306
+
+# Caching Configuration (to save tokens)
+cache:
+  enabled: true
+  ttl_minutes: 30 # Cache expires after 30 minutes
+  max_questions: 20 # Clear cache after 20 questions
+
+# Token Budget (to avoid hitting limits)
+token_budget:
+  max_per_question: 1000 # Maximum tokens per question
+  warning_threshold: 800 # Warn if approaching limit
+  session_limit: 50000 # Total tokens per session
+
+# Agent Behavior
+agent:
+  max_retries: 2 # Retry failed SQL queries up to 2 times
+  enable_direct_sql: true # Use direct SQL for simple questions
+  show_sql: true # Show generated SQL to user
+  verbose: false # Detailed logging

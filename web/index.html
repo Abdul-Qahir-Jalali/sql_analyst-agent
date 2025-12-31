@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Analyst Agent 🤖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 50%, #ffa500 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.05) 10px,
+                rgba(255, 255, 255, 0.05) 20px
+            );
+            animation: slidePattern 20s linear infinite;
+        }
+
+        @keyframes slidePattern {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            margin-top: 10px;
+            position: relative;
+            z-index: 1;
+            opacity: 0.95;
+        }
+
+        .stats-bar {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            border: 3px solid #f093fb;
+            border-radius: 20px;
+            padding: 20px;
+            background: linear-gradient(to bottom, #ffeef8 0%, #fff5fc 100%);
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #ffd6f0;
+            border-radius: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #ff6b6b, #ffa500);
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            padding: 15px 20px;
+            border-radius: 20px;
+            max-width: 80%;
+            word-wrap: break-word;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 500;
+        }
+
+        .message.agent .message-bubble {
+            background: white;
+            color: #333;
+            border: 2px solid #4facfe;
+        }
+
+        .sql-box {
+            background: #1e1e1e;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            border-left: 4px solid #00ff88;
+        }
+
+        .token-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-box {
+            flex: 1;
+            padding: 18px 25px;
+            border: 3px solid #4facfe;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-box:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+            transform: scale(1.02);
+        }
+
+        .btn {
+            padding: 18px 35px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f093fb;
+            border-top-color: #ff6b6b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .welcome-message h2 {
+            color: #ff6b6b;
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .example-questions {
+            margin-top: 20px;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .example-questions button {
+            display: block;
+            margin: 8px 0;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+        }
+
+        .example-questions button:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Database Viewer Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 25px;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .db-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .db-select {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 3px solid #4facfe;
+            border-radius: 15px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .db-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 3px solid #38ef7d;
+            border-radius: 15px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: #11998e;
+            box-shadow: 0 0 15px rgba(17, 153, 142, 0.3);
+        }
+
+        .table-info {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .schema-section {
+            background: linear-gradient(to right, #ffeef8 0%, #fff5fc 100%);
+            border: 2px solid #f093fb;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .schema-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .schema-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .schema-item .col-name {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .schema-item .col-type {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .data-table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            border: 2px solid #4facfe;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            padding: 10px 15px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 SQL Analyst Agent</h1>
+            <p>Ask anything about your retail database in natural language!</p>
+        </div>
+
+
+
+        <div class="main-content">
+            <div class="chat-container" id="chatContainer">
+                <div class="welcome-message">
+                    <h2>👋 Welcome!</h2>
+                    <p>I'm your SQL analyst. Ask me anything about your <strong>retail_analytics</strong> database!</p>
+                    <div class="example-questions">
+                        <p><strong>Try these questions:</strong></p>
+                        <button onclick="askExample('How many customers do we have?')">📊 How many customers do we have?</button>
+                        <button onclick="askExample('Who are the top 5 customers by spending?')">💰 Who are the top 5 customers by spending?</button>
+                        <button onclick="askExample('Which product category has the highest sales?')">📦 Which product category has the highest sales?</button>
+                        <button onclick="askExample('Show me orders from December 2025')">🗓️ Show me orders from December 2025</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #667eea; font-weight: 600;">Thinking...</p>
+            </div>
+
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    class="input-box" 
+                    id="questionInput" 
+                    placeholder="Ask a question about your data..."
+                    onkeypress="handleKeyPress(event)"
+                />
+                <button class="btn btn-primary" onclick="askQuestion()">Ask 🚀</button>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="viewDatabase()">View Database 🗄️</button>
+                <button class="btn btn-secondary" onclick="clearChat()">Clear Chat 🗑️</button>
+                <button class="btn btn-secondary" onclick="resetSession()">Reset Session 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Viewer Modal -->
+    <div class="modal" id="dbModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🗄️ Database Viewer</h2>
+                <button class="close-btn" onclick="closeDbViewer()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="db-controls">
+                    <select class="db-select" id="tableSelect" onchange="loadTableData()">
+                        <option value="">Select a table...</option>
+                    </select>
+                    <input type="text" class="search-box" id="searchBox" 
+                           placeholder="Search in table..." 
+                           onkeyup="handleSearchDebounce()" />
+                </div>
+                <div id="dbContent">
+                    <div class="empty-state">
+                        <h3>👆 Select a table to view</h3>
+                        <p>Choose a table from the dropdown above to explore the database</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOKEN_LIMIT_PER_DAY = 100000;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+
+        function askExample(question) {
+            document.getElementById('questionInput').value = question;
+            askQuestion();
+        }
+
+        async function askQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+
+            // Clear input and hide welcome
+            input.value = '';
+            document.querySelector('.welcome-message')?.remove();
+
+            // Add user message
+            addMessage(question, 'user');
+
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+
+            try {
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question })
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                document.getElementById('loading').classList.remove('active');
+
+                // Add agent response
+                addAgentMessage(data);
+
+                // Update stats
+                updateStats();
+
+            } catch (error) {
+                document.getElementById('loading').classList.remove('active');
+                addMessage('❌ Error: ' + error.message, 'agent');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            chatContainer.appendChild(messageDiv);
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addAgentMessage(data) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message agent';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            // Answer
+            const answerText = document.createElement('div');
+            answerText.textContent = data.answer;
+            bubble.appendChild(answerText);
+            
+            // SQL if available
+            if (data.sql) {
+                const sqlBox = document.createElement('div');
+                sqlBox.className = 'sql-box';
+                sqlBox.textContent = data.sql;
+                bubble.appendChild(sqlBox);
+            }
+            
+            // Token badge
+            const tokenBadge = document.createElement('div');
+            tokenBadge.className = 'token-badge';
+            tokenBadge.textContent = `⚡ ${data.tokens_used} tokens`;
+            bubble.appendChild(tokenBadge);
+            
+            messageDiv.appendChild(bubble);
+            chatContainer.appendChild(messageDiv);
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                document.getElementById('questionsCount').textContent = stats.questions_asked;
+                document.getElementById('tokensUsed').textContent = stats.session_total.toLocaleString();
+                document.getElementById('avgTokens').textContent = stats.average_per_question;
+                document.getElementById('tokensRemaining').textContent = 
+                    (TOKEN_LIMIT_PER_DAY - stats.session_total).toLocaleString();
+                
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }
+
+        function clearChat() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = '<div class="welcome-message"><h2>👋 Chat Cleared!</h2><p>Ask me a new question.</p></div>';
+        }
+
+        async function resetSession() {
+            if (confirm('This will reset token counters and cache. Continue?')) {
+                try {
+                    await fetch('/api/reset');
+                    clearChat();
+                    updateStats();
+                    alert('✅ Session reset successfully!');
+                } catch (error) {
+                    alert('❌ Failed to reset session: ' + error.message);
+                }
+            }
+        }
+
+        // Initialize stats on load
+        updateStats();
+
+        // Database Viewer Functions
+        let currentPage = 1;
+        let currentTable = '';
+        let searchTimeout = null;
+
+        async function viewDatabase() {
+            const modal = document.getElementById('dbModal');
+            modal.classList.add('active');
+            
+            // Load tables list
+            try {
+                const response = await fetch('/api/database/tables');
+                const data = await response.json();
+                
+                const tableSelect = document.getElementById('tableSelect');
+                tableSelect.innerHTML = '<option value="">Select a table...</option>';
+                
+                data.tables.forEach(table => {
+                    const option = document.createElement('option');
+                    option.value = table.name;
+                    option.textContent = `${table.name} (${table.row_count.toLocaleString()} rows)`;
+                    tableSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load tables:', error);
+                alert('❌ Failed to load database tables');
+            }
+        }
+
+        function closeDbViewer() {
+            const modal = document.getElementById('dbModal');
+            modal.classList.remove('active');
+            currentPage = 1;
+            currentTable = '';
+            document.getElementById('searchBox').value = '';
+        }
+
+        async function loadTableData(page = 1) {
+            const tableSelect = document.getElementById('tableSelect');
+            const tableName = tableSelect.value;
+            
+            if (!tableName) {
+                document.getElementById('dbContent').innerHTML = `
+                    <div class="empty-state">
+                        <h3>👆 Select a table to view</h3>
+                        <p>Choose a table from the dropdown above to explore the database</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentTable = tableName;
+            currentPage = page;
+            const searchBox = document.getElementById('searchBox');
+            const searchTerm = searchBox.value.trim();
+
+            try {
+                // Load schema
+                const schemaResponse = await fetch(`/api/database/table/${tableName}`);
+                const schemaData = await schemaResponse.json();
+
+                // Load data
+                let dataUrl = `/api/database/data/${tableName}?page=${page}`;
+                if (searchTerm) {
+                    dataUrl += `&search=${encodeURIComponent(searchTerm)}`;
+                }
+                const dataResponse = await fetch(dataUrl);
+                const tableData = await dataResponse.json();
+
+                // Render table
+                renderTableView(schemaData, tableData);
+
+            } catch (error) {
+                console.error('Failed to load table data:', error);
+                document.getElementById('dbContent').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTableView(schema, tableData) {
+            const content = document.getElementById('dbContent');
+            
+            let html = `
+                <div class="table-info">
+                    <div><strong>Table:</strong> ${tableData.table_name}</div>
+                    <div><strong>Total Rows:</strong> ${tableData.pagination.total_rows.toLocaleString()}</div>
+                    <div><strong>Columns:</strong> ${schema.schema.columns.length}</div>
+                </div>
+
+                <div class="schema-section">
+                    <h3>📋 Schema</h3>
+                    <div class="schema-grid">
+            `;
+
+            schema.schema.columns.forEach(col => {
+                const keyBadge = col.key ? `<span style="color: #ff6b6b; font-weight: bold;"> [${col.key}]</span>` : '';
+                html += `
+                    <div class="schema-item">
+                        <div class="col-name">${col.name}${keyBadge}</div>
+                        <div class="col-type">${col.type}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+            `;
+
+            tableData.columns.forEach(col => {
+                html += `<th>${col}</th>`;
+            });
+
+            html += `
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (tableData.data.length === 0) {
+                html += `
+                    <tr>
+                        <td colspan="${tableData.columns.length}" style="text-align: center; padding: 40px;">
+                            <h3 style="color: #999;">No data found</h3>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tableData.data.forEach(row => {
+                    html += '<tr>';
+                    tableData.columns.forEach(col => {
+                        const value = row[col];
+                        const displayValue = value === null ? '<em style="color: #999;">NULL</em>' : value;
+                        html += `<td>${displayValue}</td>`;
+                    });
+                    html += '</tr>';
+                });
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <button onclick="loadTableData(${tableData.pagination.page - 1})" 
+                            ${!tableData.pagination.has_previous ? 'disabled' : ''}>
+                        ← Previous
+                    </button>
+                    <div class="page-info">
+                        Page ${tableData.pagination.page} of ${tableData.pagination.total_pages}
+                    </div>
+                    <button onclick="loadTableData(${tableData.pagination.page + 1})" 
+                            ${!tableData.pagination.has_next ? 'disabled' : ''}>
+                        Next →
+                    </button>
+                </div>
+            `;
+
+            content.innerHTML = html;
+        }
+
+        function handleSearchDebounce() {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (currentTable) {
+                    loadTableData(1); // Reset to page 1 when searching
+                }
+            }, 500);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('dbModal')?.addEventListener('click', function(e) {
+            if (e.target.id === 'dbModal') {
+                closeDbViewer();
+            }
+        });
+    </script>
+</body>
+</html>
