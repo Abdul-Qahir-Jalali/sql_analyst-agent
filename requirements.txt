@@ -5,3 +5,6 @@ python-dotenv==1.0.0
 pyyaml==6.0.1
 pydantic==2.5.0
 groq==0.4.1
+langgraph==0.0.20
+mysql-connector-python==8.2.0
+typing-extensions==4.8.0
