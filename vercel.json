@@ -1,24 +1,8 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "app.py",
-      "use": "@vercel/python"
+      "source": "/(.*)",
+      "destination": "/api/index"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.py"
-    }
-  ],
-  "env": {
-    "GROQ_API_KEY": "@groq_api_key"
-  },
-  "functions": {
-    "app.py": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  }
+  ]
 }
