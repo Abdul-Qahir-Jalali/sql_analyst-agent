@@ -13,12 +13,9 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-# Change to root directory so relative paths work (for config.yaml, retail_analytics.db, etc.)
-os.chdir(root_dir)
-
-# Now import the FastAPI app - this will execute app.py's initialization
+# Import the FastAPI app - app.py now uses absolute paths for all files
 from app import app
 
 # Export the app for Vercel
-# Vercel will automatically handle ASGI/WSGI hosting
+
 

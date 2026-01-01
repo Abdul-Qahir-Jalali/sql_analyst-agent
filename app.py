@@ -22,12 +22,25 @@ from dotenv import load_dotenv
 
 # Load configuration
 def load_config():
-    with open("config.yaml", 'r') as f:
+    # Get absolute path to config.yaml (in same directory as this file)
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml")
+    
+    with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
     load_dotenv()
     
     # Groq API
     config['groq']['api_key'] = os.getenv("GROQ_API_KEY")
+    
+    # For SQLite, make the database path absolute
+    if config['database'].get('type') == 'sqlite':
+        db_file = config['database'].get('database', 'retail_analytics.db')
+        # If it's not already an absolute path, make it relative to this file's directory
+        if not os.path.isabs(db_file):
+            config['database']['database'] = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), 
+                db_file
+            )
     
     # Database - use environment variables if available (for production with MySQL)
     # Only update MySQL fields if database type is MySQL
@@ -177,7 +190,9 @@ async def serve_home():
     Serve the main web interface.
     """
     try:
-        with open("web/index.html", "r", encoding="utf-8") as f:
+        # Use absolute path for web/index.html
+        html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", "index.html")
+        with open(html_path, "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         return "<h1>Web interface not found. Make sure web/index.html exists.</h1>"
