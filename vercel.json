@@ -4,5 +4,8 @@
       "source": "/(.*)",
       "destination": "/api/index"
     }
-  ]
+  ],
+  "env": {
+    "LANGCHAIN_TRACING_V2": "false"
+  }
 }
