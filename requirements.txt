@@ -4,7 +4,7 @@ uvicorn==0.24.0
 python-dotenv==1.0.0
 pyyaml==6.0.1
 pydantic==2.10.3
-groq==0.4.1
+groq==0.13.0
 langgraph==0.2.50
 langchain-core==0.3.25
 mysql-connector-python==8.2.0
