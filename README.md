@@ -213,4 +213,4 @@ Issues? Check:
 
 ---
 
-Built with ❤️ using LangGraph, Groq, and MySQL
+
